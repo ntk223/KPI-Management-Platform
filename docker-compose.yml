@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  kpi-db:
+    image: mysql:8.0
+    container_name: kpi-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: kien@123
+      MYSQL_DATABASE: kpi_management
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    restart: unless-stopped
+    # Tối ưu hóa hiệu năng ghi đọc cho MySQL trong container
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_prod_data:
