@@ -1,17 +1,30 @@
 package vdt.kpimanagement.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import vdt.kpimanagement.dto.ApiResponse;
+import vdt.kpimanagement.dto.LoginDTO;
+import vdt.kpimanagement.dto.LoginInfoDTO;
+import vdt.kpimanagement.service.AuthService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
-    public ApiResponse login(@RequestParam String username, @RequestParam String password) {
-        return new ApiResponse(200, "Login successful", null);
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<LoginInfoDTO> login(@RequestBody LoginDTO loginDTO) {
+        return ApiResponse.success(HttpStatus.OK.value(), "",authService.login(loginDTO));
+    }
+
+    @GetMapping("/")
+    public Object test() {
+        return "test";
     }
 }
