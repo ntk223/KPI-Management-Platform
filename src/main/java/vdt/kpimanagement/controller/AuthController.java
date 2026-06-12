@@ -9,7 +9,7 @@ import vdt.kpimanagement.dto.LoginInfoDTO;
 import vdt.kpimanagement.service.AuthService;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
 
@@ -23,8 +23,8 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK.value(), "",authService.login(loginDTO));
     }
 
-    @GetMapping("/")
+    @GetMapping("/test")
     public Object test() {
-        return "test";
+        return ApiResponse.success(HttpStatus.OK.value(), "Test successful", null);
     }
 }

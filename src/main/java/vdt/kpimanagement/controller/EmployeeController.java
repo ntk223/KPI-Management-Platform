@@ -16,7 +16,7 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @PostMapping("/")
+    @PostMapping("/test")
     // todo -> admin
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse createEmployee(@RequestBody EmployeeDTO employeeDTO) {
