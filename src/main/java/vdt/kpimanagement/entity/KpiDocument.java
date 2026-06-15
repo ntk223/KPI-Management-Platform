@@ -1,44 +1,71 @@
 package vdt.kpimanagement.entity;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "kpi_documents")
-public class KpiDocument {
-@jakarta.persistence.Id
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import vdt.kpimanagement.constant.enums.DocumentStatus;
+import vdt.kpimanagement.constant.enums.DocumentTargetType;
+import vdt.kpimanagement.constant.enums.SourceType;
 
-@jakarta.persistence.Column(name = "document_code", nullable = false, length = 100)
-private java.lang.String documentCode;
+import java.time.LocalDateTime;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "cycle_id", nullable = false)
-private vdt.kpimanagement.entity.KpiCycle cycle;
+@Entity
+@Table(
+    name = "kpi_documents",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_doc_target_cycle",
+        columnNames = {"cycle_id", "target_type", "target_id"}
+    )
+)
+@Getter
+@Setter
+public class KpiDocument extends BaseEntity {
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "employee_id", nullable = false)
-private vdt.kpimanagement.entity.Employee employee;
+    @Column(name = "document_code", nullable = false, length = 100, unique = true)
+    private String documentCode;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "approver_id", nullable = false)
-private vdt.kpimanagement.entity.Employee approver;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cycle_id", nullable = false)
+    private KpiCycle cycle;
 
-@org.hibernate.annotations.ColumnDefault("'DRAFT'")
-@jakarta.persistence.Column(name = "status", length = 30)
-private java.lang.String status;
+    // Polymorphic: xác định KPI giao cho ai
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false, length = 20)
+    private DocumentTargetType targetType;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "is_deleted")
-private java.lang.Boolean isDeleted;
+    // NULL nếu targetType = COMPANY | departments.id | employees.id
+    // Không đặt FK constraint vì polymorphic — validate ở tầng Service
+    @Column(name = "target_id")
+    private Long targetId;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at")
-private java.time.Instant createdAt;
+    // KPI cha trong cascade (null = gốc cascade)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_doc_id")
+    private KpiDocument parentDocument;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at")
-private java.time.Instant updatedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source_type", nullable = false, length = 20)
+    private SourceType sourceType = SourceType.ASSIGNED;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false)
+    private Employee createdBy;
 
+    // NULL khi còn DRAFT/PROPOSED chưa có người duyệt
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approver_id")
+    private Employee approver;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 30)
+    private DocumentStatus status = DocumentStatus.DRAFT;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "closed_at")
+    private LocalDateTime closedAt;
 }

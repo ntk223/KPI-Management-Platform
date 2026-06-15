@@ -1,47 +1,43 @@
 package vdt.kpimanagement.entity;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "kpi_evaluations")
-public class KpiEvaluation {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import vdt.kpimanagement.constant.enums.EvaluationRating;
 
-@jakarta.persistence.OneToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "document_id", nullable = false)
-private vdt.kpimanagement.entity.KpiDocument document;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-@jakarta.persistence.Column(name = "self_score", precision = 5, scale = 2)
-private java.math.BigDecimal selfScore;
+@Entity
+@Table(name = "kpi_evaluations")
+@Getter
+@Setter
+public class KpiEvaluation extends BaseEntity {
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "self_comment")
-private java.lang.String selfComment;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_id", nullable = false, unique = true)
+    private KpiDocument document;
 
-@jakarta.persistence.Column(name = "manager_score", precision = 5, scale = 2)
-private java.math.BigDecimal managerScore;
+    @Column(name = "total_self_score", precision = 5, scale = 2)
+    private BigDecimal totalSelfScore;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "manager_comment")
-private java.lang.String managerComment;
+    @Column(name = "total_manager_score", precision = 5, scale = 2)
+    private BigDecimal totalManagerScore;
 
-@jakarta.persistence.Column(name = "final_score", precision = 5, scale = 2)
-private java.math.BigDecimal finalScore;
+    @Column(name = "total_final_score", precision = 5, scale = 2)
+    private BigDecimal totalFinalScore;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "is_deleted")
-private java.lang.Boolean isDeleted;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rating", length = 20)
+    private EvaluationRating rating;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at")
-private java.time.Instant createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "evaluator_id")
+    private Employee evaluator;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at")
-private java.time.Instant updatedAt;
+    @Column(name = "evaluated_at")
+    private LocalDateTime evaluatedAt;
 
-
-
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
 }

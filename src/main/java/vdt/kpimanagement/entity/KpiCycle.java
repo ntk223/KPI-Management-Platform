@@ -1,41 +1,40 @@
 package vdt.kpimanagement.entity;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "kpi_cycles")
-public class KpiCycle {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import vdt.kpimanagement.constant.enums.CycleStatus;
+import vdt.kpimanagement.constant.enums.CycleType;
 
-@jakarta.persistence.Column(name = "cycle_code", nullable = false, length = 50)
-private java.lang.String cycleCode;
+import java.time.LocalDate;
 
-@jakarta.persistence.Column(name = "name", nullable = false, length = 100)
-private java.lang.String name;
+@Entity
+@Table(name = "kpi_cycles")
+@Getter
+@Setter
+public class KpiCycle extends BaseEntity {
 
-@jakarta.persistence.Column(name = "type", nullable = false, length = 20)
-private java.lang.String type;
+    @Column(name = "cycle_code", nullable = false, length = 50, unique = true)
+    private String cycleCode;
 
-@jakarta.persistence.Column(name = "start_date", nullable = false)
-private java.time.LocalDate startDate;
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
 
-@jakarta.persistence.Column(name = "end_date", nullable = false)
-private java.time.LocalDate endDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 20)
+    private CycleType type;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "is_deleted")
-private java.lang.Boolean isDeleted;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at")
-private java.time.Instant createdAt;
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at")
-private java.time.Instant updatedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private CycleStatus status = CycleStatus.PLANNING;
 
-
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false)
+    private Employee createdBy;
 }

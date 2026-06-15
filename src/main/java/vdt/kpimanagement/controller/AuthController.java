@@ -23,6 +23,12 @@ public class AuthController {
         return ApiResponse.success(HttpStatus.OK.value(), "",authService.login(loginDTO));
     }
 
+//    @PostMapping("/create-account")
+//    @ResponseStatus(HttpStatus.OK)
+//    public ApiResponse<LoginInfoDTO> login(@RequestBody LoginDTO loginDTO) {
+//        return ApiResponse.success(HttpStatus.OK.value(), "",authService.login(loginDTO));
+//    }
+
     @GetMapping("/test")
     public Object test() {
         return ApiResponse.success(HttpStatus.OK.value(), "Test successful", null);

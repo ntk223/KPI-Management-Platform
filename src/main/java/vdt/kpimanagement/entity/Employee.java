@@ -1,23 +1,25 @@
 package vdt.kpimanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "employees")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 public class Employee extends BaseEntity {
-    @Column(name = "employee_code", nullable = false, length = 50)
+
+    @Column(name = "employee_code", nullable = false, length = 50, unique = true)
     private String employeeCode;
-    @Column(name = "email", nullable = false, length = 100)
-    private String email;
+
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
-    @Column(name = "phone_number", length = 10)
+
+    @Column(name = "email", nullable = false, length = 100, unique = true)
+    private String email;
+
+    @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

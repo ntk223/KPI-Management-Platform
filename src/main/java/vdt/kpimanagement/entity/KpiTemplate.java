@@ -1,38 +1,41 @@
 package vdt.kpimanagement.entity;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "kpi_templates")
-public class KpiTemplate {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import vdt.kpimanagement.constant.enums.TargetType;
 
-@jakarta.persistence.Column(name = "template_code", nullable = false, length = 50)
-private java.lang.String templateCode;
+import java.math.BigDecimal;
 
-@jakarta.persistence.Column(name = "name", nullable = false, length = 150)
-private java.lang.String name;
+@Entity
+@Table(name = "kpi_templates")
+@Getter
+@Setter
+public class KpiTemplate extends BaseEntity {
 
-@jakarta.persistence.Column(name = "unit", nullable = false, length = 20)
-private java.lang.String unit;
+    @Column(name = "template_code", nullable = false, length = 50, unique = true)
+    private String templateCode;
 
-@jakarta.persistence.Column(name = "target_type", nullable = false, length = 20)
-private java.lang.String targetType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private KpiCategory category;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "is_deleted")
-private java.lang.Boolean isDeleted;
+    @Column(name = "name", nullable = false, length = 150)
+    private String name;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at")
-private java.time.Instant createdAt;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at")
-private java.time.Instant updatedAt;
+    @Column(name = "unit", nullable = false, length = 30)
+    private String unit;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false, length = 20)
+    private TargetType targetType;
 
+    @Column(name = "default_weight", precision = 5, scale = 2)
+    private BigDecimal defaultWeight;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 }

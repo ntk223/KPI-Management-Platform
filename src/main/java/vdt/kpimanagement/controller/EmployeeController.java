@@ -16,8 +16,7 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    @PostMapping("/test")
-    // todo -> admin
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse createEmployee(@RequestBody EmployeeDTO employeeDTO) {
         // todo -> validate dữ liệu đầu vào
