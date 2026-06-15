@@ -2,45 +2,57 @@ package vdt.kpimanagement.service;
 
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.constant.enums.CycleStatus;
+import vdt.kpimanagement.dto.KpiCycleRequest;
+import vdt.kpimanagement.dto.KpiCycleResponse;
+import vdt.kpimanagement.entity.KpiCycle;
+import vdt.kpimanagement.exception.ResourceNotFoundException;
+import vdt.kpimanagement.mapper.KpiCycleMapper;
 import vdt.kpimanagement.repository.KpiCycleRepo;
 
+import java.util.Map;
+
 @Service
-public class KpiCycleService {
+public class KpiCycleService extends BaseService<KpiCycle, KpiCycleRequest, KpiCycleResponse, Long> {
+
+    // Luồng trạng thái hợp lệ: PLANNING → ACTIVE → EVALUATING → CLOSED
+    private static final Map<CycleStatus, CycleStatus> VALID_TRANSITIONS = Map.of(
+            CycleStatus.PLANNING, CycleStatus.ACTIVE,
+            CycleStatus.ACTIVE, CycleStatus.EVALUATING,
+            CycleStatus.EVALUATING, CycleStatus.CLOSED
+    );
 
     private final KpiCycleRepo kpiCycleRepo;
 
-    public KpiCycleService(KpiCycleRepo kpiCycleRepo) {
+    public KpiCycleService(KpiCycleRepo kpiCycleRepo, KpiCycleMapper kpiCycleMapper) {
+        super(kpiCycleRepo, kpiCycleMapper);
         this.kpiCycleRepo = kpiCycleRepo;
     }
 
-    // Lấy danh sách tất cả chu kỳ
-    public Object getAll() {
-        // TODO: trả về list KpiCycleDTO
-        throw new UnsupportedOperationException("Chưa implement");
+    @Override
+    public KpiCycleResponse create(KpiCycleRequest request) {
+        if (kpiCycleRepo.findByCycleCodeAndIsDeletedFalse(request.getCycleCode()).isPresent()) {
+            throw new IllegalArgumentException("Mã chu kỳ đã tồn tại: " + request.getCycleCode());
+        }
+        if (request.getStartDate() == null || request.getEndDate() == null
+                || !request.getEndDate().isAfter(request.getStartDate())) {
+            throw new IllegalArgumentException("Ngày kết thúc phải sau ngày bắt đầu");
+        }
+        KpiCycle entity = mapper.toEntity(request);
+        entity.setStatus(CycleStatus.PLANNING);
+        entity.setDeleted(false);
+        return mapper.toDto(kpiCycleRepo.save(entity));
     }
 
-    // Lấy chi tiết 1 chu kỳ
-    public Object getById(Long id) {
-        // TODO: tìm chu kỳ, ném 404 nếu không tồn tại
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Tạo chu kỳ mới (chỉ ADMIN)
-    public Object create(Object request) {
-        // TODO: validate ngày hợp lệ, mã không trùng, status = PLANNING
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Cập nhật thông tin chu kỳ (chỉ khi status = PLANNING)
-    public Object update(Long id, Object request) {
-        // TODO: chỉ cho sửa khi còn ở PLANNING
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Chuyển trạng thái chu kỳ (chỉ ADMIN)
-    // PLANNING → ACTIVE → EVALUATING → CLOSED
-    public Object changeStatus(Long id, CycleStatus newStatus) {
-        // TODO: validate luồng trạng thái hợp lệ
-        throw new UnsupportedOperationException("Chưa implement");
+    // Chuyển trạng thái: PLANNING → ACTIVE → EVALUATING → CLOSED
+    public KpiCycleResponse changeStatus(Long id, CycleStatus newStatus) {
+        KpiCycle cycle = kpiCycleRepo.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chu kỳ KPI với ID: " + id));
+        CycleStatus expected = VALID_TRANSITIONS.get(cycle.getStatus());
+        if (expected == null || expected != newStatus) {
+            throw new IllegalArgumentException(
+                    String.format("Không thể chuyển từ %s sang %s", cycle.getStatus(), newStatus));
+        }
+        cycle.setStatus(newStatus);
+        return mapper.toDto(kpiCycleRepo.save(cycle));
     }
 }

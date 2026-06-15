@@ -1,47 +1,52 @@
 package vdt.kpimanagement.service;
 
 import org.springframework.stereotype.Service;
+import vdt.kpimanagement.dto.DepartmentRequest;
+import vdt.kpimanagement.dto.DepartmentResponse;
+import vdt.kpimanagement.entity.Department;
+import vdt.kpimanagement.exception.ResourceNotFoundException;
+import vdt.kpimanagement.mapper.DepartmentMapper;
 import vdt.kpimanagement.repository.DepartmentRepo;
-import vdt.kpimanagement.repository.EmployeeRepo;
 
 @Service
-public class DepartmentService {
+public class DepartmentService extends BaseService<Department, DepartmentRequest, DepartmentResponse, Long> {
 
     private final DepartmentRepo departmentRepo;
-    private final EmployeeRepo employeeRepo;
 
-    public DepartmentService(DepartmentRepo departmentRepo, EmployeeRepo employeeRepo) {
+    public DepartmentService(DepartmentRepo departmentRepo, DepartmentMapper departmentMapper) {
+        super(departmentRepo, departmentMapper);
         this.departmentRepo = departmentRepo;
-        this.employeeRepo = employeeRepo;
     }
 
-    // Lấy danh sách tất cả phòng ban (cấp gốc)
-    public Object getAll() {
-        // TODO: trả về danh sách phòng ban dạng cây hoặc phẳng
-        throw new UnsupportedOperationException("Chưa implement");
+    @Override
+    public DepartmentResponse create(DepartmentRequest request) {
+        if (departmentRepo.existsByDepartmentCodeAndIsDeletedFalse(request.getDepartmentCode())) {
+            throw new IllegalArgumentException("Mã phòng ban đã tồn tại: " + request.getDepartmentCode());
+        }
+        Department entity = mapper.toEntity(request);
+        // Resolve parent nếu có
+        if (request.getParentId() != null) {
+            Department parent = departmentRepo.findByIdAndIsDeletedFalse(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ban cha với ID: " + request.getParentId()));
+            entity.setParent(parent);
+        }
+        entity.setDeleted(false);
+        return mapper.toDto(departmentRepo.save(entity));
     }
 
-    // Lấy chi tiết 1 phòng ban theo id
-    public Object getById(Long id) {
-        // TODO: tìm phòng ban, ném 404 nếu không tồn tại
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Tạo mới phòng ban
-    public Object create(Object request) {
-        // TODO: validate, kiểm tra mã trùng, lưu DB
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Cập nhật thông tin phòng ban
-    public Object update(Long id, Object request) {
-        // TODO: validate, cập nhật tên, parent, manager
-        throw new UnsupportedOperationException("Chưa implement");
-    }
-
-    // Xoá mềm phòng ban
-    public void delete(Long id) {
-        // TODO: kiểm tra còn nhân viên không trước khi xóa
-        throw new UnsupportedOperationException("Chưa implement");
+    @Override
+    public DepartmentResponse update(Long id, DepartmentRequest request) {
+        Department entity = departmentRepo.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ban với ID: " + id));
+        mapper.updateEntityFromDto(request, entity);
+        // Cập nhật parent nếu có thay đổi
+        if (request.getParentId() != null) {
+            Department parent = departmentRepo.findByIdAndIsDeletedFalse(request.getParentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ban cha với ID: " + request.getParentId()));
+            entity.setParent(parent);
+        } else {
+            entity.setParent(null);
+        }
+        return mapper.toDto(departmentRepo.save(entity));
     }
 }

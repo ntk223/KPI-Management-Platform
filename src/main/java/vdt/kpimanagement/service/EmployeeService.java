@@ -1,28 +1,66 @@
 package vdt.kpimanagement.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vdt.kpimanagement.dto.EmployeeDTO;
+import vdt.kpimanagement.dto.EmployeeRequest;
+import vdt.kpimanagement.dto.EmployeeResponse;
+import vdt.kpimanagement.entity.Department;
 import vdt.kpimanagement.entity.Employee;
+import vdt.kpimanagement.entity.Position;
+import vdt.kpimanagement.exception.ResourceNotFoundException;
 import vdt.kpimanagement.mapper.EmployeeMapper;
+import vdt.kpimanagement.repository.DepartmentRepo;
 import vdt.kpimanagement.repository.EmployeeRepo;
+import vdt.kpimanagement.repository.PositionRepo;
 
 @Service
-public class EmployeeService {
+public class EmployeeService extends BaseService<Employee, EmployeeRequest, EmployeeResponse, Long> {
+
     private final EmployeeRepo employeeRepo;
-    private final EmployeeMapper employeeMapper;
-    private final PasswordEncoder passwordEncoder;
-    public EmployeeService(EmployeeRepo employeeRepo,EmployeeMapper employeeMapper, PasswordEncoder passwordEncoder) {
+    private final DepartmentRepo departmentRepo;
+    private final PositionRepo positionRepo;
+
+    public EmployeeService(EmployeeRepo employeeRepo, EmployeeMapper employeeMapper,
+                           DepartmentRepo departmentRepo, PositionRepo positionRepo) {
+        super(employeeRepo, employeeMapper);
         this.employeeRepo = employeeRepo;
-        this.employeeMapper = employeeMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.departmentRepo = departmentRepo;
+        this.positionRepo = positionRepo;
     }
 
-    public boolean createEmployee(EmployeeDTO employeeDTO) {
-        Employee employee = employeeMapper.toEntity(employeeDTO);
-//        String hashPw = passwordEncoder.encode(employeeDTO.getPassword());
-        employeeRepo.save(employee);
-        return true;
+    @Override
+    public EmployeeResponse create(EmployeeRequest request) {
+        if (employeeRepo.existsByEmployeeCodeAndIsDeletedFalse(request.getEmployeeCode())) {
+            throw new IllegalArgumentException("Mã nhân viên đã tồn tại: " + request.getEmployeeCode());
+        }
+        if (employeeRepo.existsByEmailAndIsDeletedFalse(request.getEmail())) {
+            throw new IllegalArgumentException("Email đã tồn tại: " + request.getEmail());
+        }
+        Employee entity = mapper.toEntity(request);
+        entity.setDepartment(resolveDepartment(request.getDepartmentId()));
+        entity.setPosition(resolvePosition(request.getPositionId()));
+        entity.setDeleted(false);
+        return mapper.toDto(employeeRepo.save(entity));
     }
 
+    @Override
+    public EmployeeResponse update(Long id, EmployeeRequest request) {
+        Employee entity = employeeRepo.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy nhân viên với ID: " + id));
+        mapper.updateEntityFromDto(request, entity);
+        entity.setDepartment(resolveDepartment(request.getDepartmentId()));
+        entity.setPosition(resolvePosition(request.getPositionId()));
+        return mapper.toDto(employeeRepo.save(entity));
+    }
+
+    private Department resolveDepartment(Long departmentId) {
+        if (departmentId == null) return null;
+        return departmentRepo.findByIdAndIsDeletedFalse(departmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ban với ID: " + departmentId));
+    }
+
+    private Position resolvePosition(Long positionId) {
+        if (positionId == null) return null;
+        return positionRepo.findByIdAndIsDeletedFalse(positionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chức vụ với ID: " + positionId));
+    }
 }

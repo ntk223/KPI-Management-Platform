@@ -24,5 +24,14 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(error.getStatus(), error.getMessage());
     }
 
-    // Bạn có thể thêm các hàm hứng lỗi quá tải dữ liệu, lỗi 500 hệ thống tại đây...
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiResponse<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ApiResponse.error(error.getStatus(), error.getMessage());
+    }
 }
