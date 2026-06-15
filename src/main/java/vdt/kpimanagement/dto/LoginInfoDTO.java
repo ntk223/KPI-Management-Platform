@@ -3,6 +3,8 @@ package vdt.kpimanagement.dto;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,6 +15,8 @@ public class LoginInfoDTO {
     String username;
     String fullName;
     String email;
-    String accessToken;
     String position;
+    List<String> roles;
+    String accessToken;
+    String refreshToken;
 }
