@@ -1,21 +1,19 @@
 package vdt.kpimanagement.service;
 
 import org.springframework.stereotype.Service;
-import vdt.kpimanagement.repository.KpiItemEvaluationRepo;
-import vdt.kpimanagement.repository.KpiEvaluationRepo;
-import vdt.kpimanagement.repository.KpiDocumentRepo;
-import vdt.kpimanagement.repository.KpiItemRepo;
+import vdt.kpimanagement.entity.KpiDocumentEvaluation;
+import vdt.kpimanagement.repository.*;
 
 @Service
-public class KpiEvaluationService {
+public class KpiDocumentEvaluationService {
 
     private final KpiItemEvaluationRepo kpiItemEvaluationRepo;
-    private final KpiEvaluationRepo kpiEvaluationRepo;
+    private final KpiDocumentEvaluationRepo kpiEvaluationRepo;
     private final KpiDocumentRepo kpiDocumentRepo;
     private final KpiItemRepo kpiItemRepo;
 
     public KpiEvaluationService(KpiItemEvaluationRepo kpiItemEvaluationRepo,
-                                 KpiEvaluationRepo kpiEvaluationRepo,
+                                KpiDocumentEvaluationRepo kpiEvaluationRepo,
                                  KpiDocumentRepo kpiDocumentRepo,
                                  KpiItemRepo kpiItemRepo) {
         this.kpiItemEvaluationRepo = kpiItemEvaluationRepo;
