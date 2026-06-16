@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "kpi_evaluations")
+@Table(name = "kpi_document_evaluations")
 @Getter
 @Setter
-public class KpiEvaluation extends BaseEntity {
+public class KpiDocumentEvaluation extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_id", nullable = false, unique = true)

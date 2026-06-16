@@ -3,15 +3,15 @@ package vdt.kpimanagement.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdt.kpimanagement.dto.ApiResponse;
-import vdt.kpimanagement.service.KpiEvaluationService;
+import vdt.kpimanagement.service.KpiDocumentEvaluationService;
 
 @RestController
 @RequestMapping("/kpi-evaluations")
-public class KpiEvaluationController {
+public class KpiDocumentEvaluationController {
 
-    private final KpiEvaluationService kpiEvaluationService;
+    private final KpiDocumentEvaluationService kpiEvaluationService;
 
-    public KpiEvaluationController(KpiEvaluationService kpiEvaluationService) {
+    public KpiDocumentEvaluationController(KpiDocumentEvaluationService kpiEvaluationService) {
         this.kpiEvaluationService = kpiEvaluationService;
     }
 

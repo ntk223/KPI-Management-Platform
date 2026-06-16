@@ -12,7 +12,7 @@ public class KpiDocumentEvaluationService {
     private final KpiDocumentRepo kpiDocumentRepo;
     private final KpiItemRepo kpiItemRepo;
 
-    public KpiEvaluationService(KpiItemEvaluationRepo kpiItemEvaluationRepo,
+    public KpiDocumentEvaluationService(KpiItemEvaluationRepo kpiItemEvaluationRepo,
                                 KpiDocumentEvaluationRepo kpiEvaluationRepo,
                                  KpiDocumentRepo kpiDocumentRepo,
                                  KpiItemRepo kpiItemRepo) {
