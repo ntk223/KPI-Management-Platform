@@ -1,5 +1,7 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.dto.DepartmentRequest;
 import vdt.kpimanagement.dto.DepartmentResponse;
@@ -16,6 +18,11 @@ public class DepartmentService extends BaseService<Department, DepartmentRequest
     public DepartmentService(DepartmentRepo departmentRepo, DepartmentMapper departmentMapper) {
         super(departmentRepo, departmentMapper);
         this.departmentRepo = departmentRepo;
+    }
+
+    @Override
+    public Page<DepartmentResponse> search(String keyword, Pageable pageable) {
+        return departmentRepo.searchByKeyword(keyword, pageable).map(mapper::toDto);
     }
 
     @Override

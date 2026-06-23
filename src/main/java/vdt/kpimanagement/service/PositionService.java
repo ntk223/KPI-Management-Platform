@@ -1,5 +1,7 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.dto.PositionRequest;
 import vdt.kpimanagement.dto.PositionResponse;
@@ -15,6 +17,11 @@ public class PositionService extends BaseService<Position, PositionRequest, Posi
     public PositionService(PositionRepo positionRepo, PositionMapper positionMapper) {
         super(positionRepo, positionMapper);
         this.positionRepo = positionRepo;
+    }
+
+    @Override
+    public Page<PositionResponse> search(String keyword, Pageable pageable) {
+        return positionRepo.searchByKeyword(keyword, pageable).map(mapper::toDto);
     }
 
     @Override
