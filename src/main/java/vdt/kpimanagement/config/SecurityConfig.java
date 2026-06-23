@@ -54,11 +54,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Tắt CSRF vì ta dùng token Stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/auth/**").permitAll()
-//                        .requestMatchers("/employees").permitAll()
-//                        .requestMatchers("/error").permitAll() // Cho phép Spring hiển thị lỗi
-//                        .anyRequest().authenticated() // Các API còn lại bắt buộc phải đăng nhập
-                                .anyRequest().permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/employees/**").permitAll()
+                        .requestMatchers("/kpi-documents/**").permitAll()
+                        .requestMatchers("/kpi-evaluations/**").permitAll()
+                        .requestMatchers("/error").permitAll() // Cho phép Spring hiển thị lỗi
+                        .anyRequest().authenticated() // Các API còn lại bắt buộc phải đăng nhập
                 );
 
         // Chèn bộ lọc JWT của mình vào trước bộ lọc mặc định của Spring Security

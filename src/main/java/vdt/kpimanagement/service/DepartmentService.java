@@ -27,10 +27,14 @@ public class DepartmentService extends BaseService<Department, DepartmentRequest
 
     @Override
     public DepartmentResponse create(DepartmentRequest request) {
-        if (departmentRepo.existsByDepartmentCodeAndIsDeletedFalse(request.getDepartmentCode())) {
-            throw new IllegalArgumentException("Mã phòng ban đã tồn tại: " + request.getDepartmentCode());
-        }
         Department entity = mapper.toEntity(request);
+        if (request.getDepartmentCode() == null || request.getDepartmentCode().trim().isEmpty()) {
+            entity.setDepartmentCode(generateDepartmentCode());
+        } else {
+            if (departmentRepo.existsByDepartmentCodeAndIsDeletedFalse(request.getDepartmentCode())) {
+                throw new IllegalArgumentException("Mã phòng ban đã tồn tại: " + request.getDepartmentCode());
+            }
+        }
         // Resolve parent nếu có
         if (request.getParentId() != null) {
             Department parent = departmentRepo.findByIdAndIsDeletedFalse(request.getParentId())
@@ -39,6 +43,15 @@ public class DepartmentService extends BaseService<Department, DepartmentRequest
         }
         entity.setDeleted(false);
         return mapper.toDto(departmentRepo.save(entity));
+    }
+
+    private String generateDepartmentCode() {
+        long nextNum = departmentRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("DEPT%03d", nextNum++);
+        } while (departmentRepo.existsByDepartmentCodeAndIsDeletedFalse(code));
+        return code;
     }
 
     @Override

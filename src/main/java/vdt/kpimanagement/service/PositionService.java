@@ -26,9 +26,24 @@ public class PositionService extends BaseService<Position, PositionRequest, Posi
 
     @Override
     public PositionResponse create(PositionRequest request) {
-        if (positionRepo.existsByPositionCodeAndIsDeletedFalse(request.getPositionCode())) {
-            throw new IllegalArgumentException("Mã chức vụ đã tồn tại: " + request.getPositionCode());
+        Position entity = mapper.toEntity(request);
+        if (request.getPositionCode() == null || request.getPositionCode().trim().isEmpty()) {
+            entity.setPositionCode(generatePositionCode());
+        } else {
+            if (positionRepo.existsByPositionCodeAndIsDeletedFalse(request.getPositionCode())) {
+                throw new IllegalArgumentException("Mã chức vụ đã tồn tại: " + request.getPositionCode());
+            }
         }
-        return super.create(request);
+        entity.setDeleted(false);
+        return mapper.toDto(positionRepo.save(entity));
+    }
+
+    private String generatePositionCode() {
+        long nextNum = positionRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("POS%03d", nextNum++);
+        } while (positionRepo.existsByPositionCodeAndIsDeletedFalse(code));
+        return code;
     }
 }

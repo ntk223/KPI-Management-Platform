@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.dto.ApiResponse;
+import vdt.kpimanagement.dto.KpiDocumentDetailDTO;
+import vdt.kpimanagement.dto.KpiDocumentSaveDTO;
 import vdt.kpimanagement.service.KpiDocumentService;
 
 @RestController
@@ -37,9 +39,10 @@ public class KpiDocumentController {
     // Tạo phiếu KPI (DIRECTOR/MANAGER giao, hoặc EMPLOYEE đề xuất)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Object> create(@RequestBody Object request) {
+    public ApiResponse<KpiDocumentDetailDTO> create(@RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
+        Long currentEmployeeId = null;
         return ApiResponse.success(HttpStatus.CREATED.value(), "Tạo phiếu KPI thành công",
-                kpiDocumentService.create(request));
+                kpiDocumentService.saveOrUpdate(kpiDocumentSaveDTO, 1L));
     }
 
     // Gửi phiếu KPI đề xuất chờ duyệt

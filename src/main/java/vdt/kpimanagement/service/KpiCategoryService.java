@@ -30,10 +30,25 @@ public class KpiCategoryService extends BaseService<KpiCategory, KpiCategoryRequ
 
     @Override
     public KpiCategoryResponse create(KpiCategoryRequest request) {
-        if (kpiCategoryRepo.existsByCategoryCodeAndIsDeletedFalse(request.getCategoryCode())) {
-            throw new IllegalArgumentException("Mã danh mục đã tồn tại: " + request.getCategoryCode());
+        KpiCategory entity = mapper.toEntity(request);
+        if (request.getCategoryCode() == null || request.getCategoryCode().trim().isEmpty()) {
+            entity.setCategoryCode(generateCategoryCode());
+        } else {
+            if (kpiCategoryRepo.existsByCategoryCodeAndIsDeletedFalse(request.getCategoryCode())) {
+                throw new IllegalArgumentException("Mã danh mục đã tồn tại: " + request.getCategoryCode());
+            }
         }
-        return super.create(request);
+        entity.setDeleted(false);
+        return mapper.toDto(kpiCategoryRepo.save(entity));
+    }
+
+    private String generateCategoryCode() {
+        long nextNum = kpiCategoryRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("CAT%03d", nextNum++);
+        } while (kpiCategoryRepo.existsByCategoryCodeAndIsDeletedFalse(code));
+        return code;
     }
 
     @Override
