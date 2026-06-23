@@ -1,5 +1,7 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.dto.EmployeeRequest;
 import vdt.kpimanagement.dto.EmployeeResponse;
@@ -25,6 +27,11 @@ public class EmployeeService extends BaseService<Employee, EmployeeRequest, Empl
         this.employeeRepo = employeeRepo;
         this.departmentRepo = departmentRepo;
         this.positionRepo = positionRepo;
+    }
+
+    @Override
+    public Page<EmployeeResponse> search(String keyword, Pageable pageable) {
+        return employeeRepo.searchByKeyword(keyword, pageable).map(mapper::toDto);
     }
 
     @Override

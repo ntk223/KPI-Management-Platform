@@ -1,5 +1,7 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.constant.enums.CycleStatus;
 import vdt.kpimanagement.dto.KpiCycleRequest;
@@ -26,6 +28,11 @@ public class KpiCycleService extends BaseService<KpiCycle, KpiCycleRequest, KpiC
     public KpiCycleService(KpiCycleRepo kpiCycleRepo, KpiCycleMapper kpiCycleMapper) {
         super(kpiCycleRepo, kpiCycleMapper);
         this.kpiCycleRepo = kpiCycleRepo;
+    }
+
+    @Override
+    public Page<KpiCycleResponse> search(String keyword, Pageable pageable) {
+        return kpiCycleRepo.searchByKeyword(keyword, pageable).map(mapper::toDto);
     }
 
     @Override

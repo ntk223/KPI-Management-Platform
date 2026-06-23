@@ -1,11 +1,11 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import vdt.kpimanagement.entity.BaseEntity;
 import vdt.kpimanagement.repository.BaseRepository;
 import vdt.kpimanagement.common.GenericMapper;
 import vdt.kpimanagement.exception.ResourceNotFoundException;
-
-import java.util.List;
 
 public abstract class BaseService<T extends BaseEntity, REQ, RESP, ID> {
 
@@ -17,10 +17,15 @@ public abstract class BaseService<T extends BaseEntity, REQ, RESP, ID> {
         this.mapper = mapper;
     }
 
-    public List<RESP> getAll() {
-        return repository.findByIsDeletedFalse().stream()
-                .map(mapper::toDto)
-                .toList();
+    public Page<RESP> getAll(Pageable pageable) {
+        return repository.findByIsDeletedFalse(pageable).map(mapper::toDto);
+    }
+
+    /**
+     * Tìm kiếm toàn văn theo keyword — mặc định gọi getAll (subclass ghi đè để tìm thực sự).
+     */
+    public Page<RESP> search(String keyword, Pageable pageable) {
+        return getAll(pageable);
     }
 
     public RESP getById(ID id) {
