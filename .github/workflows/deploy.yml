@@ -7,7 +7,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # Giữ nguyên để tham chiếu, chúng ta sẽ convert sang chữ thường ở phía dưới
 
 jobs:
   build-and-push:
@@ -15,17 +14,14 @@ jobs:
     permissions:
       contents: read
       packages: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # BƯỚC KHẮC PHỤC: Chuyển toàn bộ tên repo về chữ thường và lưu vào biến môi trường mới
       - name: Downcase REPO name
         run: |
           echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
-      # Đăng nhập vào GitHub Container Registry
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -33,7 +29,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build và Push Docker Image (Lúc này dùng biến env.IMAGE_NAME đã được viết thường)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -43,27 +38,27 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-  deploy:
+  # KHỐI JOB DEPLOY SỬA LẠI CHUẨN ĐỊNH DẠNG:
+  deploy-job:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
-      - name: Executing remote ssh commands
+      - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_SSH_HOST }}
           username: ${{ secrets.VPS_SSH_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.VPS_PORT }}
           script: |
             cd /var/www/my-app
             
-            # Đăng nhập GHCR trên VPS (Cần chuyển actor về chữ thường nếu username github của bạn có chữ hoa)
-            # Lệnh bash `,` sẽ convert string sang lowercase
             LOW_ACTOR=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
-            LOW_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $LOW_ACTOR --password-stdin
             
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $LOW_ACTOR --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
