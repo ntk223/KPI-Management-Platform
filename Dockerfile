@@ -2,9 +2,6 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copy libs first — mandatory for system-scope dependencies
-COPY libs ./libs
-
 COPY pom.xml .
 RUN mvn -B dependency:resolve dependency:resolve-plugins
 
@@ -20,9 +17,6 @@ WORKDIR /app
 
 # Copy fat jar
 COPY --from=build /app/target/*.jar app.jar
-
-# Staff has system-scope libs → must include libs folder
-COPY libs ./libs
 
 EXPOSE 8888
 USER 1001
