@@ -3,23 +3,27 @@ name: CI/CD Docker Pipeline
 on:
   push:
     branches:
-      - main # Kích hoạt khi có hành động push hoặc merge vào branch main
+      - main
 
 env:
   REGISTRY: ghcr.io
-  # Chuyển tên repo về chữ thường vì Docker Registry không nhận chữ hoa
-  IMAGE_NAME: ${{ github.repository }}
+  # Giữ nguyên để tham chiếu, chúng ta sẽ convert sang chữ thường ở phía dưới
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write # Cần quyền này để push image lên GHCR
+      packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # BƯỚC KHẮC PHỤC: Chuyển toàn bộ tên repo về chữ thường và lưu vào biến môi trường mới
+      - name: Downcase REPO name
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       # Đăng nhập vào GitHub Container Registry
       - name: Log in to the Container registry
@@ -27,15 +31,14 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Token này GitHub tự sinh ra, không cần cấu hình thêm
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build và Push Docker Image
+      # Build và Push Docker Image (Lúc này dùng biến env.IMAGE_NAME đã được viết thường)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # Chuyển tag về dạng chữ thường để tránh lỗi Docker tag
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
@@ -43,7 +46,6 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-
     steps:
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.0.3
@@ -52,17 +54,15 @@ jobs:
           username: ${{ secrets.VPS_SSH_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Di chuyển vào thư mục chứa docker-compose trên VPS
             cd /var/www/my-app
             
-            # Đăng nhập vào GHCR từ VPS bằng Token của Github Actions cấp tạm thời
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Đăng nhập GHCR trên VPS (Cần chuyển actor về chữ thường nếu username github của bạn có chữ hoa)
+            # Lệnh bash `,` sẽ convert string sang lowercase
+            LOW_ACTOR=$(echo "${{ github.actor }}" | tr '[:upper:]' '[:lower:]')
+            LOW_REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $LOW_ACTOR --password-stdin
             
-            # Kéo Image mới nhất về VPS
             docker compose pull
-            
-            # Khởi động lại Container với Image mới (giảm thiểu tối đa downtime)
             docker compose up -d --remove-orphans
-            
-            # Dọn dẹp các Docker image cũ/rác để tránh đầy ổ cứng VPS
             docker image prune -f
