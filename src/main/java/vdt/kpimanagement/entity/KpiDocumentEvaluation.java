@@ -31,9 +31,8 @@ public class KpiDocumentEvaluation extends BaseEntity {
     @Column(name = "rating", length = 20)
     private EvaluationRating rating;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "evaluator_id")
-    private Employee evaluator;
+    @Column(name = "evaluated_by", length = 20)
+    private String evaluatedBy;
 
     @Column(name = "evaluated_at")
     private LocalDateTime evaluatedAt;

@@ -8,6 +8,7 @@ import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.constant.enums.SourceType;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,13 +35,14 @@ public class KpiDocumentDetailDTO {
     private DocumentStatus status;
 
     // Thông tin người tạo
-    private Long createdById;
-    private String createdByFullName;
-
-    // Thông tin người duyệt (Sẽ ẩn nếu null)
-    private Long approverId;
-    private String approverFullName;
-
+//    private Long createdById;
+//    private String createdByFullName;
+//
+//    // Thông tin người duyệt (Sẽ ẩn nếu null)
+//    private Long approverId;
+//    private String approverFullName;
+    private String createdBy;
+    private String approvedBy;
     // Các mốc thời gian hệ thống
     private LocalDateTime createdAt;
     private LocalDateTime submittedAt;
@@ -49,4 +51,5 @@ public class KpiDocumentDetailDTO {
 
     // Mở rộng về sau: Bạn có thể thêm List<KpiItemResponse> kpiItems tại đây
     // để trả về danh sách các tiêu chí KPI chi tiết nằm bên trong tài liệu này.
+    private List<KpiItemDTO> kpiItems;
 }

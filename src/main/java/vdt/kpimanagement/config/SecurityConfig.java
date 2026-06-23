@@ -59,7 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/kpi-documents/**").permitAll()
                         .requestMatchers("/kpi-evaluations/**").permitAll()
                         .requestMatchers("/error").permitAll() // Cho phép Spring hiển thị lỗi
-                        .anyRequest().authenticated() // Các API còn lại bắt buộc phải đăng nhập
+                        .anyRequest().permitAll() // Các API còn lại bắt buộc phải đăng nhập
                 );
 
         // Chèn bộ lọc JWT của mình vào trước bộ lọc mặc định của Spring Security

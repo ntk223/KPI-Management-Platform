@@ -22,8 +22,7 @@ public class KpiCycleResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private CycleStatus status;
-    private Long createdById;
-    private String createdByName;
+    private String createdBy;
     private Date createdAt;
     private Date updatedAt;
 }

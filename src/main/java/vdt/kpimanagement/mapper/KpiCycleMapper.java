@@ -11,8 +11,6 @@ import vdt.kpimanagement.entity.KpiCycle;
 public interface KpiCycleMapper extends GenericMapper<KpiCycle, KpiCycleRequest, KpiCycleResponse> {
 
     @Override
-    @Mapping(source = "createdBy.id", target = "createdById")
-    @Mapping(source = "createdBy.fullName", target = "createdByName")
     KpiCycleResponse toDto(KpiCycle entity);
 
     @Override

@@ -2,6 +2,8 @@ package vdt.kpimanagement.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.constant.enums.DocumentStatus;
 import vdt.kpimanagement.constant.enums.DocumentTargetType;
@@ -57,7 +59,7 @@ public class KpiDocumentService {
         // TODO: set status = DRAFT, source_type theo người tạo
         throw new UnsupportedOperationException("Chưa implement");
     }
-    public KpiDocumentDetailDTO saveOrUpdate(KpiDocumentSaveDTO dto, Long currentEmployeeId) {
+    public KpiDocumentDetailDTO saveOrUpdate(KpiDocumentSaveDTO dto, String username) {
 
         // 1. CỔNG VALIDATE CHUNG (Fail-Fast): Kiểm tra sự tồn tại của Chu kỳ KPI
         if (!kpiCycleRepo.existsById(dto.getCycleId())) {
@@ -90,7 +92,7 @@ public class KpiDocumentService {
             doc = new KpiDocument();
             doc.setDocumentCode(generateKpiDocumentCode(dto.getCycleId())); // Tự động sinh mã tài liệu theo quy tắc
             doc.setStatus(DocumentStatus.DRAFT); // Mặc định ban đầu luôn là DRAFT
-            doc.setCreatedBy(entityManager.getReference(Employee.class, currentEmployeeId)); // Gán proxy người tạo
+            doc.setCreatedBy(username); // Gán proxy người tạo
         }
 
         // ==========================================
@@ -167,15 +169,16 @@ public class KpiDocumentService {
 
         // Lấy thông tin phẳng Người tạo
         if (entity.getCreatedBy() != null) {
-            res.setCreatedById(entity.getCreatedBy().getId());
-            res.setCreatedByFullName(entity.getCreatedBy().getFullName());
+            res.setCreatedBy(entity.getCreatedBy());
         }
-
+        if  (entity.getApprovedBy() != null) {
+            res.setApprovedBy(entity.getApprovedBy());
+        }
         // Lấy thông tin phẳng Người duyệt (Có thể null nếu đang ở trạng thái DRAFT)
-        if (entity.getApprover() != null) {
-            res.setApproverId(entity.getApprover().getId());
-            res.setApproverFullName(entity.getApprover().getFullName());
-        }
+//        if (entity.getApprover() != null) {
+//            res.setApproverId(entity.getApprover().getId());
+//            res.setApproverFullName(entity.getApprover().getFullName());
+//        }
 
         // Xử lý điền tên Target Name (Vì database không có FK nên phải lấy thủ công theo loại)
         if (entity.getTargetType() == DocumentTargetType.DEPARTMENT && entity.getTargetId() != null) {

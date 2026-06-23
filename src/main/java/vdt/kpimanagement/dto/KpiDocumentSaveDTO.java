@@ -6,6 +6,8 @@ import lombok.Setter;
 import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.constant.enums.SourceType;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class KpiDocumentSaveDTO {
@@ -26,4 +28,5 @@ public class KpiDocumentSaveDTO {
     private Long parentDocId; // Nullable - Nếu thuộc cấu trúc cascade (cha-con)
 
     private SourceType sourceType = SourceType.ASSIGNED; // Mặc định là ASSIGNED nếu không truyền
+    private List<KpiItemDTO> kpiItems;
 }

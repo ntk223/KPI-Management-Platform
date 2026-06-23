@@ -14,7 +14,6 @@ public class KpiItemDTO {
     Long id;
     Long documentId;
     Long templateId;
-    Long parentId;
     Double weight;
     Double targetValue;
     Double currentValue;

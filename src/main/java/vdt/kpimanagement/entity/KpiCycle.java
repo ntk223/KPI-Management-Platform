@@ -34,7 +34,6 @@ public class KpiCycle extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private CycleStatus status = CycleStatus.PLANNING;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private Employee createdBy;
+    @Column(name = "created_by", nullable = false, length = 20)
+    private String createdBy;
 }

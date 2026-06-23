@@ -27,7 +27,6 @@ public class KpiAttachment extends BaseEntity {
     @Column(name = "file_size_bytes")
     private Long fileSizeBytes;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by", nullable = false)
-    private Employee uploadedBy;
+    @Column(name = "uploaded_by", nullable = false)
+    private String uploadedBy;
 }

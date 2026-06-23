@@ -47,14 +47,11 @@ public class KpiDocument extends BaseEntity {
     @Column(name = "source_type", nullable = false, length = 20)
     private SourceType sourceType = SourceType.ASSIGNED;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private Employee createdBy;
+    @Column(name = "created_by", nullable = false, length = 20)
+    private String createdBy;
 
-    // NULL khi còn DRAFT/PROPOSED chưa có người duyệt
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approver_id")
-    private Employee approver;
+    @Column(name = "approved_by", nullable = true, length = 20)
+    private String approvedBy;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)

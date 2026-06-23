@@ -1,6 +1,8 @@
 package vdt.kpimanagement.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.dto.ApiResponse;
@@ -40,9 +42,13 @@ public class KpiDocumentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<KpiDocumentDetailDTO> create(@RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
-        Long currentEmployeeId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication != null && authentication.isAuthenticated())) {
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "Không xác thực được người dùng");
+        }
+        String currentUser = authentication.getName();
         return ApiResponse.success(HttpStatus.CREATED.value(), "Tạo phiếu KPI thành công",
-                kpiDocumentService.saveOrUpdate(kpiDocumentSaveDTO, 1L));
+                kpiDocumentService.saveOrUpdate(kpiDocumentSaveDTO, currentUser));
     }
 
     // Gửi phiếu KPI đề xuất chờ duyệt
