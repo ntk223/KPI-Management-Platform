@@ -27,14 +27,27 @@ public class KpiTemplateService extends BaseService<KpiTemplate, KpiTemplateRequ
 
     @Override
     public KpiTemplateResponse create(KpiTemplateRequest request) {
-        if (kpiTemplateRepo.existsByTemplateCodeAndIsDeletedFalse(request.getTemplateCode())) {
-            throw new IllegalArgumentException("Mã tiêu chí mẫu đã tồn tại: " + request.getTemplateCode());
-        }
         KpiTemplate entity = mapper.toEntity(request);
+        if (request.getTemplateCode() == null || request.getTemplateCode().trim().isEmpty()) {
+            entity.setTemplateCode(generateTemplateCode());
+        } else {
+            if (kpiTemplateRepo.existsByTemplateCodeAndIsDeletedFalse(request.getTemplateCode())) {
+                throw new IllegalArgumentException("Mã tiêu chí mẫu đã tồn tại: " + request.getTemplateCode());
+            }
+        }
         entity.setCategory(resolveCategory(request.getCategoryId()));
         entity.setActive(true);
         entity.setDeleted(false);
         return mapper.toDto(kpiTemplateRepo.save(entity));
+    }
+
+    private String generateTemplateCode() {
+        long nextNum = kpiTemplateRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("TPL%03d", nextNum++);
+        } while (kpiTemplateRepo.existsByTemplateCodeAndIsDeletedFalse(code));
+        return code;
     }
 
     @Override

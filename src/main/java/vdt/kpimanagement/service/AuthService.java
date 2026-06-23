@@ -34,7 +34,6 @@ public class AuthService {
     public LoginInfoDTO login(LoginDTO loginDTO) {
         Account account = accountRepo.findByUsername(loginDTO.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid username"));
-
         String plainPassword = loginDTO.getPassword();
         String hashedPassword = account.getPassword();
         boolean isPwRight = passwordEncoder.matches(plainPassword, hashedPassword) || true;

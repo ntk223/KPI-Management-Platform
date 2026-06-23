@@ -30,17 +30,31 @@ public class KpiCycleService extends BaseService<KpiCycle, KpiCycleRequest, KpiC
 
     @Override
     public KpiCycleResponse create(KpiCycleRequest request) {
-        if (kpiCycleRepo.findByCycleCodeAndIsDeletedFalse(request.getCycleCode()).isPresent()) {
-            throw new IllegalArgumentException("Mã chu kỳ đã tồn tại: " + request.getCycleCode());
-        }
         if (request.getStartDate() == null || request.getEndDate() == null
                 || !request.getEndDate().isAfter(request.getStartDate())) {
             throw new IllegalArgumentException("Ngày kết thúc phải sau ngày bắt đầu");
         }
         KpiCycle entity = mapper.toEntity(request);
+        if (request.getCycleCode() == null || request.getCycleCode().trim().isEmpty()) {
+            entity.setCycleCode(generateCycleCode(request));
+        } else {
+            if (kpiCycleRepo.findByCycleCodeAndIsDeletedFalse(request.getCycleCode()).isPresent()) {
+                throw new IllegalArgumentException("Mã chu kỳ đã tồn tại: " + request.getCycleCode());
+            }
+        }
         entity.setStatus(CycleStatus.PLANNING);
         entity.setDeleted(false);
         return mapper.toDto(kpiCycleRepo.save(entity));
+    }
+
+    private String generateCycleCode(KpiCycleRequest request) {
+        int year = request.getStartDate() != null ? request.getStartDate().getYear() : java.time.LocalDate.now().getYear();
+        long nextNum = kpiCycleRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("CYC-%d-%03d", year, nextNum++);
+        } while (kpiCycleRepo.findByCycleCodeAndIsDeletedFalse(code).isPresent());
+        return code;
     }
 
     // Chuyển trạng thái: PLANNING → ACTIVE → EVALUATING → CLOSED

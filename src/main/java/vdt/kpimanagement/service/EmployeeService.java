@@ -29,17 +29,30 @@ public class EmployeeService extends BaseService<Employee, EmployeeRequest, Empl
 
     @Override
     public EmployeeResponse create(EmployeeRequest request) {
-        if (employeeRepo.existsByEmployeeCodeAndIsDeletedFalse(request.getEmployeeCode())) {
-            throw new IllegalArgumentException("Mã nhân viên đã tồn tại: " + request.getEmployeeCode());
+        Employee entity = mapper.toEntity(request);
+        if (request.getEmployeeCode() == null || request.getEmployeeCode().trim().isEmpty()) {
+            entity.setEmployeeCode(generateEmployeeCode());
+        } else {
+            if (employeeRepo.existsByEmployeeCodeAndIsDeletedFalse(request.getEmployeeCode())) {
+                throw new IllegalArgumentException("Mã nhân viên đã tồn tại: " + request.getEmployeeCode());
+            }
         }
         if (employeeRepo.existsByEmailAndIsDeletedFalse(request.getEmail())) {
             throw new IllegalArgumentException("Email đã tồn tại: " + request.getEmail());
         }
-        Employee entity = mapper.toEntity(request);
         entity.setDepartment(resolveDepartment(request.getDepartmentId()));
         entity.setPosition(resolvePosition(request.getPositionId()));
         entity.setDeleted(false);
         return mapper.toDto(employeeRepo.save(entity));
+    }
+
+    private String generateEmployeeCode() {
+        long nextNum = employeeRepo.count() + 1;
+        String code;
+        do {
+            code = String.format("EMP%03d", nextNum++);
+        } while (employeeRepo.existsByEmployeeCodeAndIsDeletedFalse(code));
+        return code;
     }
 
     @Override

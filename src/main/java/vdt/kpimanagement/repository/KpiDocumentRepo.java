@@ -15,4 +15,6 @@ public interface KpiDocumentRepo extends JpaRepository<KpiDocument, Long> {
             Long cycleId, DocumentTargetType targetType, Long targetId);
 
     List<KpiDocument> findByParentDocument_IdAndIsDeletedFalse(Long parentDocId);
+
+    Long countByCycle_IdAndIsDeletedFalse(Long cycleId);
 }
