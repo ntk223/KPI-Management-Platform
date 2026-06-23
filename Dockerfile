@@ -11,7 +11,6 @@ COPY src ./src
 # Build jar
 RUN mvn clean package -DskipTests
 
-# ====== RUNTIME STAGE ======
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
