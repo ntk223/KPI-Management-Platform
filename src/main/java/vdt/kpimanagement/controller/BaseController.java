@@ -1,12 +1,15 @@
 package vdt.kpimanagement.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import vdt.kpimanagement.dto.ApiResponse;
 import vdt.kpimanagement.entity.BaseEntity;
 import vdt.kpimanagement.service.BaseService;
-
-import java.util.List;
 
 public abstract class BaseController<T extends BaseEntity, REQ, RESP, ID> {
 
@@ -18,9 +21,20 @@ public abstract class BaseController<T extends BaseEntity, REQ, RESP, ID> {
         this.resourceName = resourceName;
     }
 
+    /**
+     * GET /resource?keyword=&page=&size=&sort=
+     * Nếu keyword có giá trị → gọi service.search(); ngược lại → service.getAll()
+     */
     @GetMapping
-    public ApiResponse<List<RESP>> getAll() {
-        return ApiResponse.success(HttpStatus.OK.value(), "Danh sách " + resourceName, service.getAll());
+    public ApiResponse<Page<RESP>> getAll(
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Page<RESP> result = StringUtils.hasText(keyword)
+                ? service.search(keyword.trim(), pageable)
+                : service.getAll(pageable);
+
+        return ApiResponse.success(HttpStatus.OK.value(), "Danh sách " + resourceName, result);
     }
 
     @GetMapping("/{id}")

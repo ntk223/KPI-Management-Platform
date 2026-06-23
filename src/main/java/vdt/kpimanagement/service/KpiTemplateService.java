@@ -1,5 +1,7 @@
 package vdt.kpimanagement.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vdt.kpimanagement.dto.KpiTemplateRequest;
 import vdt.kpimanagement.dto.KpiTemplateResponse;
@@ -23,6 +25,11 @@ public class KpiTemplateService extends BaseService<KpiTemplate, KpiTemplateRequ
         super(kpiTemplateRepo, kpiTemplateMapper);
         this.kpiTemplateRepo = kpiTemplateRepo;
         this.kpiCategoryRepo = kpiCategoryRepo;
+    }
+
+    @Override
+    public Page<KpiTemplateResponse> search(String keyword, Pageable pageable) {
+        return kpiTemplateRepo.searchByKeyword(keyword, pageable).map(mapper::toDto);
     }
 
     @Override
