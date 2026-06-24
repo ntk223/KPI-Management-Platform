@@ -15,11 +15,11 @@ public class KpiDocumentSearchDTO {
     private DocumentTargetType targetType;
     private Long targetId;
     private DocumentStatus status;
-    private Long createdBy;
-
-    // Các trường phục vụ phân trang & sắp xếp (Đặt sẵn giá trị mặc định chuẩn)
-    private int page = 0;
-    private int size = 10;
-    private String sortBy = "createdAt";
-    private String sortDirection = "DESC"; // DESC để tài liệu mới tạo lên đầu
+//    private Long createdBy;
+//
+//    // Các trường phục vụ phân trang & sắp xếp (Đặt sẵn giá trị mặc định chuẩn)
+//    private int page = 0;
+//    private int size = 10;
+//    private String sortBy = "createdAt";
+//    private String sortDirection = "DESC"; // DESC để tài liệu mới tạo lên đầu
 }

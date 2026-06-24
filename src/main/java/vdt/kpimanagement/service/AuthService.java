@@ -44,6 +44,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(account.getUsername(), roles);
         String refreshToken = refreshTokenService.createRefreshToken(account.getUsername());
         LoginInfoDTO loginInfoDTO = LoginInfoDTO.builder()
+                                    .employeeId(account.getEmployee().getId())
                                     .username(loginDTO.getUsername())
                                     .email(account.getEmployee().getEmail())
                                     .accessToken(accessToken)
@@ -51,6 +52,7 @@ public class AuthService {
                                     .roles(roles)
                                     .position(account.getEmployee().getPosition().getPositionCode())
                                     .fullName(account.getEmployee().getFullName())
+                                    .department(account.getEmployee().getDepartment())
                                     .build();
         return loginInfoDTO;
     }

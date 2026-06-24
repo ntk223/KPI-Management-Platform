@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import vdt.kpimanagement.constant.enums.TargetType;
+
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
@@ -13,9 +16,16 @@ import lombok.experimental.FieldDefaults;
 public class KpiItemDTO {
     Long id;
     Long documentId;
+    String name;
+    String description;
+    String unit;
     Long templateId;
-    Double weight;
-    Double targetValue;
-    Double currentValue;
+    BigDecimal weight;
+    BigDecimal targetValue;
+    BigDecimal currentValue;
     Boolean isDeleted;
+    TargetType targetType;
+    BigDecimal selfScore;
+    BigDecimal managerScore;
+    BigDecimal finalScore;
 }

@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vdt.kpimanagement.entity.Employee;
 
+import java.util.List;
+
 public interface EmployeeRepo extends BaseRepository<Employee, Long> {
     boolean existsByEmployeeCodeAndIsDeletedFalse(String employeeCode);
     boolean existsByEmailAndIsDeletedFalse(String email);
+    List<Employee> findByDepartment_IdAndIsDeletedFalse(Long departmentId);
 
     @Query("""
             SELECT e FROM Employee e

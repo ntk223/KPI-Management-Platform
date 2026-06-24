@@ -24,9 +24,9 @@ public class KpiItem extends BaseEntity {
     private KpiTemplate template;
 
     // Tiêu chí cha (phân cấp bên trong 1 phiếu — khác parent_doc_id)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_item_id")
-    private KpiItem parentItem;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "parent_item_id")
+//    private KpiItem parentItem;
 
     @Column(name = "name", nullable = false, length = 200)
     private String name;

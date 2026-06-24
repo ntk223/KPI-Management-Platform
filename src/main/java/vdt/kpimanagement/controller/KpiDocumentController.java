@@ -8,7 +8,10 @@ import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.dto.ApiResponse;
 import vdt.kpimanagement.dto.KpiDocumentDetailDTO;
 import vdt.kpimanagement.dto.KpiDocumentSaveDTO;
+import vdt.kpimanagement.dto.KpiDocumentSearchDTO;
 import vdt.kpimanagement.service.KpiDocumentService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/kpi-documents")
@@ -20,15 +23,18 @@ public class KpiDocumentController {
         this.kpiDocumentService = kpiDocumentService;
     }
 
-    // Lấy KPI theo target trong 1 chu kỳ
-    // VD: GET /kpi-documents?cycleId=1&targetType=DEPARTMENT&targetId=3
-    @GetMapping
-    public ApiResponse<Object> getByTarget(@RequestParam Long cycleId,
-                                           @RequestParam DocumentTargetType targetType,
-                                           @RequestParam(required = false) Long targetId) {
-        return ApiResponse.success(HttpStatus.OK.value(), "Danh sách phiếu KPI",
-                kpiDocumentService.getByTarget(cycleId, targetType, targetId));
+    // Lấy chi tiết phiếu KPI theo ID
+    @GetMapping("/{id}")
+    public ApiResponse<KpiDocumentDetailDTO> getById(@PathVariable Long id) {
+        return ApiResponse.success(HttpStatus.OK.value(), "Chi tiết phiếu KPI",
+                kpiDocumentService.getById(id));
     }
+
+//    @GetMapping
+//    public ApiResponse<KpiDocumentDetailDTO> getDocByType(@RequestParam String type) {
+//        return ApiResponse.success(HttpStatus.OK.value(), "Chi tiết phiếu KPI",
+//                kpiDocumentService.getDocByType(type));
+//    }
 
     // Lấy KPI cá nhân của nhân viên đang đăng nhập
     @GetMapping("/my")
@@ -41,7 +47,7 @@ public class KpiDocumentController {
     // Tạo phiếu KPI (DIRECTOR/MANAGER giao, hoặc EMPLOYEE đề xuất)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<KpiDocumentDetailDTO> create(@RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
+    public ApiResponse<KpiDocumentDetailDTO> saveOrUpdate(@RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication != null && authentication.isAuthenticated())) {
             return ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "Không xác thực được người dùng");
@@ -49,6 +55,12 @@ public class KpiDocumentController {
         String currentUser = authentication.getName();
         return ApiResponse.success(HttpStatus.CREATED.value(), "Tạo phiếu KPI thành công",
                 kpiDocumentService.saveOrUpdate(kpiDocumentSaveDTO, currentUser));
+    }
+
+    @PostMapping("/search")
+    public ApiResponse<List<KpiDocumentDetailDTO>> search(@RequestBody KpiDocumentSearchDTO searchDto) {
+        return ApiResponse.success(HttpStatus.CREATED.value(), "Tìm kiếm phiếu KPI thành công",
+                kpiDocumentService.search(searchDto));
     }
 
     // Gửi phiếu KPI đề xuất chờ duyệt
