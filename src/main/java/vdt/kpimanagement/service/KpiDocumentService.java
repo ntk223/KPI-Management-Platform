@@ -274,8 +274,22 @@ public class KpiDocumentService {
             // HÀNH ĐỘNG: TẠO MỚI (CREATE)
             doc = new KpiDocument();
             doc.setDocumentCode(generateKpiDocumentCode(dto.getCycleId())); // Tự động sinh mã tài liệu theo quy tắc
-            doc.setStatus(DocumentStatus.DRAFT); // Mặc định ban đầu luôn là DRAFT
             doc.setCreatedBy(username); // Gán proxy người tạo
+
+            // Nếu người tạo là DIRECTOR hoặc MANAGER → phê duyệt tự động ngay lập tức
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isDirector = auth != null && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_DIRECTOR"));
+            boolean isManager = auth != null && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+
+            if (isDirector || isManager) {
+                doc.setStatus(DocumentStatus.APPROVED);
+                doc.setApprovedBy(username);
+                doc.setApprovedAt(java.time.LocalDateTime.now());
+            } else {
+                doc.setStatus(DocumentStatus.DRAFT);
+            }
         }
 
         // ==========================================

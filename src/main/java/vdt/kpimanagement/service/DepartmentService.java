@@ -54,6 +54,7 @@ public class DepartmentService extends BaseService<Department, DepartmentRequest
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng ban cha với ID: " + request.getParentId()));
             entity.setParent(parent);
         }
+
         entity.setDeleted(false);
         return mapper.toDto(departmentRepo.save(entity));
     }
