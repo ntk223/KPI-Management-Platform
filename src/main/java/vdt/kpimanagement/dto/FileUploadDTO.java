@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 
 public class FileUploadDTO {
-    String fileName;
+    String presignedUrl;
     String objectKey;
 }

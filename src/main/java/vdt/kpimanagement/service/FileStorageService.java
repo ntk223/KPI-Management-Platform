@@ -47,6 +47,27 @@ public class FileStorageService {
         URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
 
         // Trả về DTO chứa URL cho Client upload và objectKey để Client gửi lại sau khi upload xong
-        return new FileUploadDTO(presignedUrl.toString(), objectKey);
+        FileUploadDTO result = new FileUploadDTO();
+        result.setPresignedUrl(presignedUrl.toString());
+        result.setObjectKey(objectKey);
+        return result;
+    }
+
+    public String generateDownloadUrl(String objectKey) {
+        // Thiết lập thời gian link có hiệu lực để xem (ví dụ: 10 phút)
+        Date expiration = new Date();
+        long expTimeMillis = expiration.getTime();
+        expTimeMillis += 1000 * 60 * 10; // 10 phút
+        expiration.setTime(expTimeMillis);
+
+        // Tạo request cấp quyền GET (Đọc/Tải file)
+        GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucketName, objectKey)
+                        .withMethod(HttpMethod.GET) // Khác biệt ở đây: Dùng GET thay vì PUT
+                        .withExpiration(expiration);
+
+        URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
+
+        return url.toString();
     }
 }

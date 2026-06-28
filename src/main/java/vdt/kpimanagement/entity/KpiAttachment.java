@@ -10,16 +10,21 @@ import lombok.Setter;
 @Setter
 public class KpiAttachment extends BaseEntity {
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "tracking_log_id", nullable = false)
+//    private KpiTrackingLog trackingLog;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tracking_log_id", nullable = false)
-    private KpiTrackingLog trackingLog;
+    @JoinColumn(name = "kpi_item_id", nullable = false)
+    private KpiItem kpiItem;
 
     @Column(name = "file_name", nullable = false, length = 255)
     private String fileName;
 
     // URL trỏ tới storage (S3/MinIO/local) — không lưu binary trong DB
-    @Column(name = "file_url", nullable = false, length = 500)
-    private String fileUrl;
+    @Column(name = "object_key", nullable = false, length = 500)
+    private String objectKey;
 
     @Column(name = "file_type", length = 50)
     private String fileType;
