@@ -17,20 +17,20 @@ public class AuthController {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<LoginInfoDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ApiResponse<LoginInfoDTO> login(@jakarta.validation.Valid @RequestBody LoginDTO loginDTO) {
         return ApiResponse.success(HttpStatus.OK.value(), "",authService.login(loginDTO));
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<String> logout(@RequestBody RefreshTokenRequest req) {
+    public ApiResponse<String> logout(@jakarta.validation.Valid @RequestBody RefreshTokenRequest req) {
         authService.logout(req.getToken());
         return ApiResponse.success(HttpStatus.OK.value(),"Đăng xuất thành công");
     }
 
     @PostMapping("/refresh-token")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<TokenResponse> refreshToken(@RequestBody RefreshTokenRequest req) {
+    public ApiResponse<TokenResponse> refreshToken(@jakarta.validation.Valid @RequestBody RefreshTokenRequest req) {
         return ApiResponse.success(HttpStatus.OK.value(), "", authService.refreshToken(req.getToken()));
     }
 

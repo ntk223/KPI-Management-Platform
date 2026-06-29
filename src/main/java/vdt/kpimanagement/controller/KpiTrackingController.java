@@ -19,7 +19,7 @@ public class KpiTrackingController {
     // Cập nhật tiến độ 1 tiêu chí KPI
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Object> addProgress(@RequestBody KpiTrackingLogRequestDTO request) {
+    public ApiResponse<Object> addProgress(@jakarta.validation.Valid @RequestBody KpiTrackingLogRequestDTO request) {
         return ApiResponse.success(HttpStatus.CREATED.value(), "Cập nhật tiến độ thành công",
                 kpiTrackingService.addProgress(request));
     }

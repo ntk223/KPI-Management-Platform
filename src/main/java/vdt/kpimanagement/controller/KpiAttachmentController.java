@@ -29,7 +29,7 @@ public class KpiAttachmentController {
     /** Step 3: Confirm upload — saves metadata to DB */
     @PostMapping("/confirm-upload")
     public ApiResponse<Object> confirmUpload(
-            @RequestBody KpiAttachmentUploadDTO request,
+            @jakarta.validation.Valid @RequestBody KpiAttachmentUploadDTO request,
             @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails != null) {
             request.setUploadedBy(userDetails.getUsername());

@@ -44,12 +44,12 @@ public abstract class BaseController<T extends BaseEntity, REQ, RESP, ID> {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<RESP> create(@RequestBody REQ request) {
+    public ApiResponse<RESP> create(@jakarta.validation.Valid @RequestBody REQ request) {
         return ApiResponse.success(HttpStatus.CREATED.value(), "Tạo " + resourceName + " thành công", service.create(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<RESP> update(@PathVariable ID id, @RequestBody REQ request) {
+    public ApiResponse<RESP> update(@PathVariable ID id, @jakarta.validation.Valid @RequestBody REQ request) {
         return ApiResponse.success(HttpStatus.OK.value(), "Cập nhật " + resourceName + " thành công", service.update(id, request));
     }
 

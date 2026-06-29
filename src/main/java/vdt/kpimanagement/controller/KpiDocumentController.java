@@ -47,7 +47,7 @@ public class KpiDocumentController {
     // Tạo phiếu KPI (DIRECTOR/MANAGER giao, hoặc EMPLOYEE đề xuất)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<KpiDocumentDetailDTO> saveOrUpdate(@RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
+    public ApiResponse<KpiDocumentDetailDTO> saveOrUpdate(@jakarta.validation.Valid @RequestBody KpiDocumentSaveDTO kpiDocumentSaveDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication != null && authentication.isAuthenticated())) {
             return ApiResponse.error(HttpStatus.UNAUTHORIZED.value(), "Không xác thực được người dùng");

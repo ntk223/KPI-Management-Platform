@@ -1,7 +1,9 @@
 package vdt.kpimanagement.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -17,18 +19,18 @@ public class AccountRole {
     private AccountRoleId id = new AccountRoleId();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("accountId")
-    @JoinColumn(name = "account_id", nullable = false)
+    @JoinColumn(name = "account_id", insertable = false, updatable = false)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("roleId")
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(name = "role_id", insertable = false, updatable = false)
     private Role role;
 
     @Embeddable
     @Getter
     @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class AccountRoleId implements Serializable {
 
         @Column(name = "account_id")

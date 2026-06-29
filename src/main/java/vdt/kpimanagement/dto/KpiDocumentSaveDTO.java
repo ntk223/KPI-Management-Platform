@@ -1,5 +1,6 @@
 package vdt.kpimanagement.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,5 +29,7 @@ public class KpiDocumentSaveDTO {
     private Long parentDocId; // Nullable - Nếu thuộc cấu trúc cascade (cha-con)
 
     private SourceType sourceType = SourceType.ASSIGNED; // Mặc định là ASSIGNED nếu không truyền
+
+    @Valid
     private List<KpiItemDTO> kpiItems;
 }
