@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vdt.kpimanagement.constant.enums.TargetType;
+import vdt.kpimanagement.constant.enums.KpiItemType;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -22,6 +23,7 @@ public class KpiTemplateResponse {
     private String description;
     private String unit;
     private TargetType targetType;
+    private KpiItemType itemType;
     private BigDecimal defaultWeight;
     private boolean isActive;
     private Date createdAt;

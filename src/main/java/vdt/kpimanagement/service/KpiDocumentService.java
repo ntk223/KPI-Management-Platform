@@ -16,6 +16,8 @@ import vdt.kpimanagement.entity.KpiCycle;
 import vdt.kpimanagement.entity.KpiDocument;
 import vdt.kpimanagement.entity.KpiItem;
 import vdt.kpimanagement.entity.KpiTemplate;
+import vdt.kpimanagement.entity.Department;
+import java.util.Optional;
 import vdt.kpimanagement.exception.BadRequestException;
 import vdt.kpimanagement.exception.ResourceNotFoundException;
 import vdt.kpimanagement.repository.*;
@@ -252,10 +254,6 @@ public class KpiDocumentService {
         // 2. VALIDATE POLYMORPHIC: Kiểm tra đối tượng nhận KPI (Target) tùy theo loại
         validateTargetEntity(dto.getTargetType(), dto.getTargetId());
 
-        // 3. VALIDATE TÀI LIỆU CHA: Nếu có truyền parentDocId
-        if (dto.getParentDocId() != null && !kpiDocumentRepo.existsById(dto.getParentDocId())) {
-            throw new BadRequestException("Tài liệu KPI cha có ID " + dto.getParentDocId() + " không tồn tại");
-        }
 
         KpiDocument doc;
 
@@ -275,20 +273,32 @@ public class KpiDocumentService {
             doc = new KpiDocument();
             doc.setDocumentCode(generateKpiDocumentCode(dto.getCycleId())); // Tự động sinh mã tài liệu theo quy tắc
             doc.setCreatedBy(username); // Gán proxy người tạo
+        }
 
-            // Nếu người tạo là DIRECTOR hoặc MANAGER → phê duyệt tự động ngay lập tức
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            boolean isDirector = auth != null && auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_DIRECTOR"));
-            boolean isManager = auth != null && auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
+        // Xác định và thiết lập trạng thái dựa trên isDraft và quyền hạn người tạo
+        boolean isDraft = dto.getIsDraft() != null && dto.getIsDraft();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isDirector = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_DIRECTOR"));
+        boolean isManager = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
 
+        if (isDraft) {
+            doc.setStatus(DocumentStatus.DRAFT);
+            doc.setApprovedBy(null);
+            doc.setApprovedAt(null);
+            doc.setSubmittedAt(null);
+        } else {
             if (isDirector || isManager) {
                 doc.setStatus(DocumentStatus.APPROVED);
                 doc.setApprovedBy(username);
                 doc.setApprovedAt(java.time.LocalDateTime.now());
+                doc.setSubmittedAt(null);
             } else {
-                doc.setStatus(DocumentStatus.DRAFT);
+                doc.setStatus(DocumentStatus.PENDING_APPROVAL);
+                doc.setSubmittedAt(java.time.LocalDateTime.now());
+                doc.setApprovedBy(null);
+                doc.setApprovedAt(null);
             }
         }
 
@@ -303,11 +313,7 @@ public class KpiDocumentService {
         // Tận dụng getReference để lấy Proxy khóa ngoại cứng, tránh câu lệnh SELECT thừa
         doc.setCycle(entityManager.getReference(KpiCycle.class, dto.getCycleId()));
 
-        if (dto.getParentDocId() != null) {
-            doc.setParentDocument(entityManager.getReference(KpiDocument.class, dto.getParentDocId()));
-        } else {
-            doc.setParentDocument(null);
-        }
+
 
         // Lưu xuống DB (Hibernate tự nhận biết INSERT hay UPDATE dựa trên việc 'doc' có ID hay chưa)
         KpiDocument savedDoc = kpiDocumentRepo.save(doc);
@@ -339,7 +345,9 @@ public class KpiDocumentService {
                     item.setUnit(itemDTO.getUnit());
                     item.setTargetType(itemDTO.getTargetType());
                     item.setTargetValue(itemDTO.getTargetValue());
-                    item.setWeight(itemDTO.getWeight());
+                    item.setParentWeight(itemDTO.getParentWeight());
+                    item.setDocumentWeight(itemDTO.getDocumentWeight());
+                    item.setItemType(itemDTO.getItemType() != null ? itemDTO.getItemType() : vdt.kpimanagement.constant.enums.KpiItemType.PERCENTAGE);
                     if (itemDTO.getTemplateId() != null) {
                         item.setTemplate(entityManager.getReference(KpiTemplate.class, itemDTO.getTemplateId()));
                     } else {
@@ -366,7 +374,9 @@ public class KpiDocumentService {
                     item.setUnit(itemDTO.getUnit());
                     item.setTargetType(itemDTO.getTargetType());
                     item.setTargetValue(itemDTO.getTargetValue());
-                    item.setWeight(itemDTO.getWeight());
+                    item.setParentWeight(itemDTO.getParentWeight());
+                    item.setDocumentWeight(itemDTO.getDocumentWeight());
+                    item.setItemType(itemDTO.getItemType() != null ? itemDTO.getItemType() : vdt.kpimanagement.constant.enums.KpiItemType.PERCENTAGE);
                     if (itemDTO.getTemplateId() != null) {
                         item.setTemplate(entityManager.getReference(KpiTemplate.class, itemDTO.getTemplateId()));
                     } else {
@@ -427,6 +437,7 @@ public class KpiDocumentService {
         res.setSubmittedAt(entity.getSubmittedAt());
         res.setApprovedAt(entity.getApprovedAt());
         res.setClosedAt(entity.getClosedAt());
+        res.setRejectReason(entity.getRejectReason());
 
         // Lấy thông tin phẳng từ mối quan hệ Cycle (Hibernate tự động load vì session còn mở)
         if (entity.getCycle() != null) {
@@ -434,11 +445,6 @@ public class KpiDocumentService {
             res.setCycleName(entity.getCycle().getName());
         }
 
-        // Lấy thông tin phẳng tài liệu cha
-        if (entity.getParentDocument() != null) {
-            res.setParentDocId(entity.getParentDocument().getId());
-            res.setParentDocCode(entity.getParentDocument().getDocumentCode());
-        }
 
         // Lấy thông tin phẳng Người tạo
         if (entity.getCreatedBy() != null) {
@@ -473,9 +479,13 @@ public class KpiDocumentService {
                 itemDTO.setDescription(item.getDescription());
                 itemDTO.setUnit(item.getUnit());
                 itemDTO.setTargetType(item.getTargetType());
-                itemDTO.setWeight(item.getWeight());
+                itemDTO.setParentWeight(item.getParentWeight());
+                itemDTO.setDocumentWeight(item.getDocumentWeight());
+                itemDTO.setWeight(item.getParent() != null ? item.getParentWeight() : item.getDocumentWeight());
                 itemDTO.setTargetValue(item.getTargetValue());
                 itemDTO.setCurrentValue(item.getCurrentValue());
+                itemDTO.setProgress(item.getProgress());
+                itemDTO.setItemType(item.getItemType());
                 if (item.getTemplate() != null) {
                     itemDTO.setTemplateId(item.getTemplate().getId());
                 }
@@ -511,35 +521,106 @@ public class KpiDocumentService {
         return "KPI-" + cycleCode + "-" + formattedNumber; // Output: KPI-Q2-2026-0001
     }
     // Gửi phiếu chờ duyệt (EMPLOYEE đề xuất)
-    public Object submit(Long documentId) {
-        // TODO: DRAFT → PENDING_APPROVAL
-        // TODO: set submitted_at = now()
-        throw new UnsupportedOperationException("Chưa implement");
+    public KpiDocumentDetailDTO submit(Long documentId) {
+        KpiDocument doc = kpiDocumentRepo.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài liệu KPI với ID: " + documentId));
+
+        if (doc.getStatus() != DocumentStatus.DRAFT && doc.getStatus() != DocumentStatus.REJECTED) {
+            throw new BadRequestException("Chỉ có thể gửi duyệt tài liệu KPI ở trạng thái NHÁP (DRAFT) hoặc BỊ TỪ CHỐI (REJECTED)");
+        }
+
+        doc.setStatus(DocumentStatus.PENDING_APPROVAL);
+        doc.setSubmittedAt(java.time.LocalDateTime.now());
+
+        KpiDocument savedDoc = kpiDocumentRepo.save(doc);
+        List<KpiItem> items = kpiItemRepo.findByDocument_IdAndIsDeletedFalse(savedDoc.getId());
+        return mapToDetailResponse(savedDoc, items);
     }
 
     // Duyệt phiếu KPI đề xuất (MANAGER)
-    public Object approve(Long documentId, Long approverId) {
-        // TODO: PENDING_APPROVAL → APPROVED → IN_PROGRESS
-        // TODO: set approved_at = now(), approver_id
-        throw new UnsupportedOperationException("Chưa implement");
+    public KpiDocumentDetailDTO approve(Long documentId, Long approverId) {
+        KpiDocument doc = kpiDocumentRepo.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài liệu KPI với ID: " + documentId));
+
+        if (doc.getStatus() != DocumentStatus.PENDING_APPROVAL) {
+            throw new BadRequestException("Chỉ có thể duyệt tài liệu KPI ở trạng thái CHỜ PHÊ DUYỆT (PENDING_APPROVAL)");
+        }
+
+        String approverUsername = "system";
+        if (approverId != null) {
+            Optional<Account> accOpt = accountRepo.findByEmployeeId(approverId);
+            if (accOpt.isPresent()) {
+                approverUsername = accOpt.get().getUsername();
+            } else {
+                employeeRepo.findById(approverId)
+                        .ifPresent(emp -> doc.setApprovedBy(emp.getFullName()));
+            }
+        }
+        if (approverUsername != null && !"system".equals(approverUsername)) {
+            doc.setApprovedBy(approverUsername);
+        }
+
+        doc.setStatus(DocumentStatus.APPROVED);
+        doc.setApprovedAt(java.time.LocalDateTime.now());
+        doc.setRejectReason(null);
+
+        KpiDocument savedDoc = kpiDocumentRepo.save(doc);
+        List<KpiItem> items = kpiItemRepo.findByDocument_IdAndIsDeletedFalse(savedDoc.getId());
+        return mapToDetailResponse(savedDoc, items);
     }
 
     // Từ chối phiếu KPI đề xuất (MANAGER)
-    public Object reject(Long documentId, String reason) {
-        // TODO: PENDING_APPROVAL → REJECTED
-        throw new UnsupportedOperationException("Chưa implement");
+    public KpiDocumentDetailDTO reject(Long documentId, String reason) {
+        KpiDocument doc = kpiDocumentRepo.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài liệu KPI với ID: " + documentId));
+
+        if (doc.getStatus() != DocumentStatus.PENDING_APPROVAL) {
+            throw new BadRequestException("Chỉ có thể từ chối tài liệu KPI ở trạng thái CHỜ PHÊ DUYỆT (PENDING_APPROVAL)");
+        }
+
+        doc.setStatus(DocumentStatus.REJECTED);
+        doc.setRejectReason(reason);
+
+        KpiDocument savedDoc = kpiDocumentRepo.save(doc);
+        List<KpiItem> items = kpiItemRepo.findByDocument_IdAndIsDeletedFalse(savedDoc.getId());
+        return mapToDetailResponse(savedDoc, items);
     }
 
     // Đóng phiếu KPI cuối kỳ
-    public Object close(Long documentId) {
-        // TODO: MANAGER_EVALUATED → CLOSED
-        // TODO: set closed_at = now()
-        throw new UnsupportedOperationException("Chưa implement");
+    public KpiDocumentDetailDTO close(Long documentId) {
+        KpiDocument doc = kpiDocumentRepo.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài liệu KPI với ID: " + documentId));
+
+        doc.setStatus(DocumentStatus.CLOSED);
+        doc.setClosedAt(java.time.LocalDateTime.now());
+
+        KpiDocument savedDoc = kpiDocumentRepo.save(doc);
+        List<KpiItem> items = kpiItemRepo.findByDocument_IdAndIsDeletedFalse(savedDoc.getId());
+        return mapToDetailResponse(savedDoc, items);
     }
 
     // Xem danh sách phiếu KPI chờ duyệt (MANAGER)
-    public Object getPendingApprovals(Long managerId) {
-        // TODO: lấy các document source_type=PROPOSED, status=PENDING_APPROVAL thuộc phòng manager quản lý
-        throw new UnsupportedOperationException("Chưa implement");
+    public List<KpiDocumentDetailDTO> getPendingApprovals(Long managerId) {
+        List<Department> managedDepts = departmentRepo.findByManagerIdAndIsDeletedFalse(managerId);
+        List<Long> employeeIds = new ArrayList<>();
+        for (Department dept : managedDepts) {
+            List<Employee> employees = employeeRepo.findByDepartment_IdAndIsDeletedFalse(dept.getId());
+            for (Employee emp : employees) {
+                employeeIds.add(emp.getId());
+            }
+        }
+        if (employeeIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<KpiDocument> docs = kpiDocumentRepo.findByTargetTypeAndTargetIdInAndStatusAndIsDeletedFalse(
+                DocumentTargetType.EMPLOYEE, employeeIds, DocumentStatus.PENDING_APPROVAL);
+
+        List<KpiDocumentDetailDTO> dtos = new ArrayList<>();
+        for (KpiDocument doc : docs) {
+            List<KpiItem> items = kpiItemRepo.findByDocument_IdAndIsDeletedFalse(doc.getId());
+            dtos.add(mapToDetailResponse(doc, items));
+        }
+        return dtos;
     }
 }

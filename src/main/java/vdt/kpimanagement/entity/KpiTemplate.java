@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import vdt.kpimanagement.constant.enums.TargetType;
+import vdt.kpimanagement.constant.enums.KpiItemType;
 
 import java.math.BigDecimal;
 
@@ -32,6 +33,10 @@ public class KpiTemplate extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "target_type", nullable = false, length = 20)
     private TargetType targetType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "item_type", nullable = false, length = 20)
+    private KpiItemType itemType = KpiItemType.PERCENTAGE;
 
     @Column(name = "default_weight", precision = 5, scale = 2)
     private BigDecimal defaultWeight;

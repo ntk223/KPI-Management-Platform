@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KpiCycleRequest {
-    @NotBlank(message = "Mã chu kỳ không được để trống")
     @Size(max = 20, message = "Mã chu kỳ không được vượt quá 20 ký tự")
     private String cycleCode;
 

@@ -23,15 +23,16 @@ public class KpiTrackingService {
     private final KpiTrackingLogRepo kpiTrackingLogRepo;
     private final KpiItemRepo kpiItemRepo;
     private final EmployeeRepo employeeRepo;
+    private final KpiItemService kpiItemService;
 
     public KpiTrackingService(KpiTrackingLogRepo kpiTrackingLogRepo,
                               KpiItemRepo kpiItemRepo,
-                              EmployeeRepo employeeRepo) {
+                              EmployeeRepo employeeRepo, KpiItemService kpiItemService) {
         this.kpiTrackingLogRepo = kpiTrackingLogRepo;
         this.kpiItemRepo = kpiItemRepo;
         this.employeeRepo = employeeRepo;
+        this.kpiItemService = kpiItemService;
     }
-
 
     // Cập nhật tiến độ 1 tiêu chí KPI
     @Transactional
@@ -48,9 +49,7 @@ public class KpiTrackingService {
         BigDecimal valueDelta = valueAfter.subtract(valueBefore);
 
         // Cập nhật giá trị hiện tại của KPI Item
-        kpiItem.setCurrentValue(valueAfter);
-        kpiItemRepo.save(kpiItem);
-
+        kpiItemService.updateItemValue(kpiItem.getId(), valueAfter);
         // Lưu log
         KpiTrackingLog log = new KpiTrackingLog();
         log.setKpiItem(kpiItem);

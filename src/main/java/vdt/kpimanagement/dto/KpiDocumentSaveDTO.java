@@ -30,6 +30,8 @@ public class KpiDocumentSaveDTO {
 
     private SourceType sourceType = SourceType.ASSIGNED; // Mặc định là ASSIGNED nếu không truyền
 
+    private Boolean isDraft;
+
     @Valid
     private List<KpiItemDTO> kpiItems;
 }

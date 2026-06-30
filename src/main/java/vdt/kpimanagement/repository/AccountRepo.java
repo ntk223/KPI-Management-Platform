@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface AccountRepo extends BaseRepository<Account, Long> {
     Optional<Account> findByUsername(String username);
+    Optional<Account> findByEmployeeId(Long employeeId);
 
     @Query("""
             SELECT a FROM Account a LEFT JOIN a.employee e

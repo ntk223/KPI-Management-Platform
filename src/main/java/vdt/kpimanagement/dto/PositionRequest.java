@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PositionRequest {
-    @NotBlank(message = "Mã chức vụ không được để trống")
     @Size(max = 20, message = "Mã chức vụ không được vượt quá 20 ký tự")
     private String positionCode;
 

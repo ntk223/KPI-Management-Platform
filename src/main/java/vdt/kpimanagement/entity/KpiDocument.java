@@ -7,6 +7,7 @@ import vdt.kpimanagement.constant.enums.DocumentStatus;
 import vdt.kpimanagement.constant.enums.DocumentTargetType;
 import vdt.kpimanagement.constant.enums.SourceType;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
     name = "kpi_documents",
     uniqueConstraints = @UniqueConstraint(
         name = "uq_doc_target_cycle",
-        columnNames = {"cycle_id", "target_type", "target_id"}
+        columnNames = {"cycle_id", "target_type", "target_id", "status"}
     )
 )
 @Getter
@@ -28,7 +29,7 @@ public class KpiDocument extends BaseEntity {
     @JoinColumn(name = "cycle_id", nullable = false)
     private KpiCycle cycle;
 
-    // Polymorphic: xác định KPI giao cho ai
+    // Polymorphic: xác định KPI giao cho ai (owner)
     @Enumerated(EnumType.STRING)
     @Column(name = "target_type", nullable = false, length = 20)
     private DocumentTargetType targetType;
@@ -65,4 +66,10 @@ public class KpiDocument extends BaseEntity {
 
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
+
+    @Column(name = "reject_reason", length = 255)
+    private String rejectReason;
+
+    @Column(name = "total_progress", precision = 5, scale = 2, nullable = false)
+    private BigDecimal totalProgress = BigDecimal.ZERO;
 }

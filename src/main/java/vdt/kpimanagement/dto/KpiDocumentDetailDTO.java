@@ -48,6 +48,7 @@ public class KpiDocumentDetailDTO {
     private LocalDateTime submittedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime closedAt;
+    private String rejectReason;
 
     // Mở rộng về sau: Bạn có thể thêm List<KpiItemResponse> kpiItems tại đây
     // để trả về danh sách các tiêu chí KPI chi tiết nằm bên trong tài liệu này.

@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KpiCategoryRequest {
-    @NotBlank(message = "Mã danh mục không được để trống")
     @Size(max = 20, message = "Mã danh mục không được vượt quá 20 ký tự")
     private String categoryCode;
 

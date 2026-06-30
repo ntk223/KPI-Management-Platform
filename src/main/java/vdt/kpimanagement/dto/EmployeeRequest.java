@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployeeRequest {
-    @NotBlank(message = "Mã nhân viên không được để trống")
     @Size(max = 20, message = "Mã nhân viên không được vượt quá 20 ký tự")
     private String employeeCode;
 

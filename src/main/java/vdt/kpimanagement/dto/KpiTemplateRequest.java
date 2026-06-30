@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vdt.kpimanagement.constant.enums.TargetType;
+import vdt.kpimanagement.constant.enums.KpiItemType;
 
 import java.math.BigDecimal;
 
@@ -14,7 +15,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class KpiTemplateRequest {
-    @NotBlank(message = "Mã mẫu KPI không được để trống")
     @Size(max = 50, message = "Mã mẫu KPI không được vượt quá 50 ký tự")
     private String templateCode;
 
@@ -33,6 +33,8 @@ public class KpiTemplateRequest {
 
     @NotNull(message = "Loại mục tiêu không được để trống")
     private TargetType targetType;
+
+    private KpiItemType itemType = KpiItemType.PERCENTAGE;
 
     @NotNull(message = "Trọng số mặc định không được để trống")
     @DecimalMin(value = "0.0", message = "Trọng số mặc định không được âm")

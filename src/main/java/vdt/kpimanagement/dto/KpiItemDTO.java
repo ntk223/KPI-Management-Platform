@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import vdt.kpimanagement.constant.enums.TargetType;
+import vdt.kpimanagement.constant.enums.KpiItemType;
 
 import java.math.BigDecimal;
 
@@ -29,16 +30,23 @@ public class KpiItemDTO {
     String unit;
 
     Long templateId;
+    KpiItemType itemType;
 
-    @NotNull(message = "Trọng số không được để trống")
-    @DecimalMin(value = "0.0", message = "Trọng số không được âm")
-    @DecimalMax(value = "100.0", message = "Trọng số không được vượt quá 100")
+    @DecimalMin(value = "0.0", message = "Trọng số đóng góp lên cha không được âm")
+    @DecimalMax(value = "100.0", message = "Trọng số đóng góp lên cha không được vượt quá 100")
+    BigDecimal parentWeight = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.0", message = "Trọng số đóng góp vào phiếu không được âm")
+    @DecimalMax(value = "100.0", message = "Trọng số đóng góp vào phiếu không được vượt quá 100")
+    BigDecimal documentWeight = BigDecimal.ZERO;
+
     BigDecimal weight;
 
     @NotNull(message = "Giá trị mục tiêu không được để trống")
     BigDecimal targetValue;
 
     BigDecimal currentValue;
+    BigDecimal progress;
     Boolean isDeleted;
 
     @NotNull(message = "Loại mục tiêu không được để trống")
